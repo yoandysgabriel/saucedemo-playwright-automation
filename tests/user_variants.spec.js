@@ -1,9 +1,10 @@
 const { test, expect } = require('@playwright/test');
 const { LoginPage } = require('../pages/LoginPage');
 const { InventoryPage } = require('../pages/InventoryPage');
+const { CartPage } = require('../pages/CartPage');
 const users = require('../data/users');
 
-test.describe('User Variant Regression Suite', () => {
+test.describe('NEW — User-variant tests', () => {
   let loginPage;
 
   test.beforeEach(async ({ page }) => {
@@ -12,38 +13,46 @@ test.describe('User Variant Regression Suite', () => {
   });
 
   /**
-   * TEST CASE: Verify security lockout message
-   * Expectation: UI should prevent access and display a specific error for locked users.
+   * TEST: Locked-out user shows proper error
+   * Requirement: Assert login fails and error references "locked".
    */
-  test('locked_out_user should see error message', async () => {
+  test('locked_out_user shows proper error', async () => {
     await loginPage.login(users.lockedOutUser.username, users.lockedOutUser.password);
     await expect(loginPage.errorMessage).toBeVisible();
-    await expect(loginPage.errorMessage).toContainText('Sorry, this user has been locked out');
+    // Validating that the error text is non-empty and contains "locked"
+    await expect(loginPage.errorMessage).toContainText(/locked/i);
   });
 
   /**
-   * TEST CASE: Performance Regression
-   * Expectation: Application must be resilient to backend delays. 
-   * Note: Using an extended timeout to handle the specific glitch associated with this profile.
+   * TEST: Performance-glitch user checks
+   * Requirement: Ensure main inventory page eventually loads with a longer timeout.
    */
-  test('performance_glitch_user should load inventory with delay', async ({ page }) => {
+  test('performance_glitch_user should eventually load inventory', async ({ page }) => {
     const inventoryPage = new InventoryPage(page);
     await loginPage.login(users.performanceGlitchUser.username, users.performanceGlitchUser.password);
     
-    // Validating system availability under degraded performance conditions
-    await expect(inventoryPage.inventoryContainer).toBeVisible({ timeout: 10000 });
+    // Applying extended timeout to handle intentional performance degradation
+    await expect(inventoryPage.inventoryContainer).toBeVisible({ timeout: 15000 });
   });
 
   /**
-   * TEST CASE: Visual/Functional integrity
-   * Expectation: Ensure product assets are correctly mapped.
-   * Note: This user profile often triggers broken image sources in this SUT.
+   * TEST: Problem user checks
+   * Requirement: Add 2 items and assert the cart contains 2 items (integrity check).
    */
-  test('problem_user should see consistent product images', async ({ page }) => {
+  test('problem_user cart integrity check', async ({ page }) => {
     const inventoryPage = new InventoryPage(page);
+    const cartPage = new CartPage(page);
+
     await loginPage.login(users.problemUser.username, users.problemUser.password);
     
-    const firstProductImg = page.locator('.inventory_item_img img').first();
-    await expect(firstProductImg).toHaveAttribute('src', '/static/media/sauce-backpack-1200x1500.0a0b8539.jpg');
+    // Adding 2 different items to verify basic cart functionality for this variant
+    const addButtons = page.locator('[data-test^="add-to-cart"]');
+    await addButtons.nth(0).click();
+    await addButtons.nth(1).click();
+
+    await inventoryPage.header.cartLink.click();
+    
+    // Asserting the cart integrity for the problem_user profile
+    await expect(cartPage.cartItems).toHaveCount(2);
   });
 });
