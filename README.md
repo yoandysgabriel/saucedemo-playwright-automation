@@ -5,26 +5,33 @@ Automated test suite for SauceLabs' Demo Website using **Playwright** and **Java
 ## 🚀 Getting Started
 
 1. **Install dependencies:**
-   **bash**
+
+   ```bash
    npm install
 
-2. **Install Playwright browsers:**
-   **bash**
+   ```
 
-npx playwright install chromium
+2. **Install Playwright browsers:**
+
+   ```bash
+    npx playwright install chromium
+
+   ```
 
 3. **Run all tests:**
-   **bash**
 
-   # Headless mode
+   ```bash
+
+   ## Headless mode
 
    npm test
 
-   # UI mode for debugging
+   ## UI mode for debugging
 
    npx playwright test --ui
+   ```
 
-🏗️ Project Architecture
+# 🏗️ Project Architecture
 
     pages/: Page Objects and Shared Components (e.g., Header).
 
@@ -32,7 +39,7 @@ npx playwright install chromium
 
     data/: Centralized test data and user credentials.
 
-🛠️ Tech Stack
+# 🛠️ Tech Stack
 
     Framework: Playwright (Web-first assertions and auto-waiting).
 
