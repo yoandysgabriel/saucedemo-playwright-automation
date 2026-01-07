@@ -1,5 +1,4 @@
-const { Header } = require('./Header');
-
+const {Header} = require('./Header');
 class InventoryPage {
   constructor(page) {
     this.page = page;
