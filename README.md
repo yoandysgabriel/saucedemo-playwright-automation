@@ -20,14 +20,15 @@ Automated test suite for SauceLabs' Demo Website using **Playwright** and **Java
 
 3. **Run all tests:**
 
-   ```bash
-
    ## Headless mode
 
+   ```bash
    npm test
+   ```
 
    ## UI mode for debugging
 
+   ```bash
    npx playwright test --ui
    ```
 
