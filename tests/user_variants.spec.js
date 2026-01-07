@@ -27,19 +27,22 @@ test.describe('NEW — User-variant tests', () => {
     await expect(inventoryPage.inventoryContainer).toBeVisible({ timeout: 30000 });
   });
 
-  test('problem_user should maintain cart integrity with multiple items', async ({ page }) => {
-    const inventoryPage = new InventoryPage(page);
-    const cartPage = new CartPage(page);
+    test('problem_user should maintain cart integrity with multiple items', async ({ page }) => {
+        const inventoryPage = new InventoryPage(page);
+        const cartPage = new CartPage(page); // Declarada una sola vez aquí
 
-    await loginPage.login(users.problemUser.username, users.problemUser.password);
+        await loginPage.login(users.problemUser.username, users.problemUser.password);
     
-    // Adding 2 different items
-    const addButtons = page.locator('[data-test^="add-to-cart"]');
-    await addButtons.nth(0).click();
-    await addButtons.nth(1).click();
+        // Add first item and wait for the badge to update to '1'
+        await inventoryPage.addItemByIndex(0);
+        await expect(inventoryPage.header.cartBadge).toHaveText('1');
 
-    await inventoryPage.header.cartLink.click();
-    // Requirement: Assert cart contains 2 items for this variant
-    await expect(cartPage.cartItems).toHaveCount(2);
+        // Add second item and wait for the badge to update to '2'
+        await inventoryPage.addItemByIndex(1);
+        await expect(inventoryPage.header.cartBadge).toHaveText('2');
+
+        await inventoryPage.header.cartLink.click();
+    
+        await expect(cartPage.cartItems).toHaveCount(2);
   });
 });
