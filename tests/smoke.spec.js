@@ -15,32 +15,29 @@ test.describe('Smoke Flows', () => {
     await page.goto('/');
   });
 
-  test('Successful login with standard_user', async ({ page }) => {
+  test('standard_user should login successfully', async ({ page }) => {
     await loginPage.login(users.standardUser.username, users.standardUser.password);
     await expect(page).toHaveURL(/inventory.html/);
     await expect(inventoryPage.inventoryContainer).toBeVisible();
   });
 
-  test('Successful logout', async ({ page }) => {
+  test('standard_user should logout successfully', async ({ page }) => {
     await loginPage.login(users.standardUser.username, users.standardUser.password);
     await inventoryPage.header.logout();
     await expect(page).toHaveURL('https://www.saucedemo.com/');
   });
 
-  test('Complete checkout flow', async ({ page }) => {
+  test('standard_user should complete checkout successfully', async ({ page }) => {
     const cartPage = new CartPage(page);
     const checkoutPage = new CheckoutPage(page);
 
     await loginPage.login(users.standardUser.username, users.standardUser.password);
-    
-    // Acciones del flujo
     await inventoryPage.addFirstItem();
     await inventoryPage.header.cartLink.click();
     await cartPage.proceedToCheckout();
-    await checkoutPage.fillInformation('Test', 'User', '12345');
+    await checkoutPage.fillInformation('QA', 'Candidate', '12345');
     await checkoutPage.finishOrder();
 
-    // Verificación final
     await expect(checkoutPage.completeHeader).toHaveText('Thank you for your order!');
   });
 });

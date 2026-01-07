@@ -12,47 +12,34 @@ test.describe('NEW — User-variant tests', () => {
     await page.goto('/');
   });
 
-  /**
-   * TEST: Locked-out user shows proper error
-   * Requirement: Assert login fails and error references "locked".
-   */
-  test('locked_out_user shows proper error', async () => {
+  test('locked_out_user_cannot_login should show proper error', async () => {
     await loginPage.login(users.lockedOutUser.username, users.lockedOutUser.password);
+    // Requirement: Visible error and include text assertion
     await expect(loginPage.errorMessage).toBeVisible();
-    // Validating that the error text is non-empty and contains "locked"
     await expect(loginPage.errorMessage).toContainText(/locked/i);
   });
 
-  /**
-   * TEST: Performance-glitch user checks
-   * Requirement: Ensure main inventory page eventually loads with a longer timeout.
-   */
   test('performance_glitch_user should eventually load inventory', async ({ page }) => {
     const inventoryPage = new InventoryPage(page);
     await loginPage.login(users.performanceGlitchUser.username, users.performanceGlitchUser.password);
     
-    // Applying extended timeout to handle intentional performance degradation
-    await expect(inventoryPage.inventoryContainer).toBeVisible({ timeout: 15000 });
+    // Requirement: Use a reasonable extended timeout (up to 30s) instead of fixed sleeps
+    await expect(inventoryPage.inventoryContainer).toBeVisible({ timeout: 30000 });
   });
 
-  /**
-   * TEST: Problem user checks
-   * Requirement: Add 2 items and assert the cart contains 2 items (integrity check).
-   */
-  test('problem_user cart integrity check', async ({ page }) => {
+  test('problem_user should maintain cart integrity with multiple items', async ({ page }) => {
     const inventoryPage = new InventoryPage(page);
     const cartPage = new CartPage(page);
 
     await loginPage.login(users.problemUser.username, users.problemUser.password);
     
-    // Adding 2 different items to verify basic cart functionality for this variant
+    // Adding 2 different items
     const addButtons = page.locator('[data-test^="add-to-cart"]');
     await addButtons.nth(0).click();
     await addButtons.nth(1).click();
 
     await inventoryPage.header.cartLink.click();
-    
-    // Asserting the cart integrity for the problem_user profile
+    // Requirement: Assert cart contains 2 items for this variant
     await expect(cartPage.cartItems).toHaveCount(2);
   });
 });
